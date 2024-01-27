@@ -1,65 +1,53 @@
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.Socket;
-import java.util.Objects;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class ClientHandler implements Runnable{
+public class ClientHandler implements Runnable {
     Socket clientSocket = null;
-    public ClientHandler(Socket client){
+    static final Object lock = new Object();
+
+    public ClientHandler(Socket client) {
         this.clientSocket = client;
     }
 
 
     @Override
-    public void run(){
+    public void run() {
         System.out.println("New client connected.");
-        Scanner in = null;
-        PrintStream out = null;
 
-        try {
-            in = new Scanner(clientSocket.getInputStream());
-            out = new PrintStream(clientSocket.getOutputStream());
+        try (Scanner in = new Scanner(clientSocket.getInputStream());
+             PrintStream out = new PrintStream(clientSocket.getOutputStream())) {
 
             userMenu(in, out);
 
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (clientSocket != null) {
                 try {
                     clientSocket.close();
-                }
-                catch (IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-            if (in != null) {
-                in.close();
-            }
-            if (out != null) {
-                out.close();
             }
         }
     }
 
-    protected static void userMenu(Scanner in, PrintStream out){
+    protected static void userMenu(Scanner in, PrintStream out) throws IOException {
         out.println("Do you want to create new regex or browse the existing ones: [create/browse]");
         String nextAction = in.nextLine();
 
         if (nextAction.equalsIgnoreCase("create")) {
             createMenu(in, out);
-        }
-         else if (nextAction.equalsIgnoreCase("browse")){
+        } else if (nextAction.equalsIgnoreCase("browse")) {
             browseMenu(in, out);
         }
 
     }
 
-    protected static void createMenu(Scanner in, PrintStream out){
+    protected static void createMenu(Scanner in, PrintStream out) throws IOException {
         out.println("REGEX CREATION");
         out.println("Enter regex pattern: ");
         Pattern pattern = Pattern.compile(in.nextLine());
@@ -67,13 +55,52 @@ public class ClientHandler implements Runnable{
         out.println("Enter regex description: ");
         String description = in.nextLine();
 
-        Regex regex = new Regex(pattern, description);
-        //TODO: finish menu
+        addRegexToFile(pattern, description);
     }
-    protected static void browseMenu(Scanner in, PrintStream out){
+
+    protected static void browseMenu(Scanner in, PrintStream out) {
         out.println("BROWSING");
         out.println("Enter keyword: ");
         String keyword = in.nextLine();
         //TODO: finish menu
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static List<Regex> loadRegex() {
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(Server.REGEX_DB))) {
+            return (List<Regex>) in.readObject();
+        } catch (IOException e) {
+            if (e instanceof InvalidClassException) {
+                throw new RuntimeException("One or more of the User subclasses has likely changed." +
+                        " Serializable versions are not supported." +
+                        " Recreate the users file.", e);
+            }
+
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            // Should never happen
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    public static void saveRegex(List<Regex> regexes) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(Server.REGEX_DB))) {
+            out.writeObject(regexes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected static void addRegexToFile(Pattern pattern, String description) throws IOException {
+        Regex regex = new Regex(pattern, description);
+        synchronized (lock) {
+            List<Regex> regexes = loadRegex();
+            if (regexes != null) {
+                regexes.add(regex);
+            }
+            saveRegex(regexes);
+        }
     }
 }

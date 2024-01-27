@@ -17,43 +17,35 @@ public class Client {
             out = new PrintStream(server.getOutputStream());
 
             userMenu(console, in, out);
-
-
-        }
-        catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             if (server != null) {
                 try {
                     server.close();
-                }
-                catch (IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
     }
 
-    protected static void userMenu(Scanner console, Scanner in, PrintStream out){
-        while (true){
-
+    protected static void userMenu(Scanner console, Scanner in, PrintStream out) {
+        while (in.hasNextLine()) {
             System.out.println(in.nextLine());
             out.println(console.nextLine());
 
             String nextAction = in.nextLine();
             System.out.println(nextAction);
-            if(nextAction.equals("REGEX CREATION")){
+            if (nextAction.equals("REGEX CREATION")) {
                 createMenu(console, in, out);
-            }
-            else if (nextAction.equals("BROWSING")){
+            } else if (nextAction.equals("BROWSING")) {
                 browseMenu(console, in, out);
             }
-
         }
     }
 
-    protected static void createMenu(Scanner console, Scanner in, PrintStream out){
+    protected static void createMenu(Scanner console, Scanner in, PrintStream out) {
         System.out.println(in.nextLine());
         out.println(console.nextLine());
 
@@ -64,7 +56,7 @@ public class Client {
 
     }
 
-    protected static void browseMenu(Scanner console, Scanner in, PrintStream out){
+    protected static void browseMenu(Scanner console, Scanner in, PrintStream out) {
         System.out.println(in.nextLine());
 
         //TODO:

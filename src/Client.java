@@ -27,20 +27,34 @@ public class Client {
                     e.printStackTrace();
                 }
             }
+            if (in != null) {
+                in.close();
+            }
+            if (out != null) {
+                out.close();
+            }
         }
     }
 
     protected static void userMenu(Scanner console, Scanner in, PrintStream out) {
-        while (in.hasNextLine()) {
+        while (true) {
             System.out.println(in.nextLine());
             out.println(console.nextLine());
 
             String nextAction = in.nextLine();
             System.out.println(nextAction);
-            if (nextAction.equals("REGEX CREATION")) {
-                createMenu(console, in, out);
-            } else if (nextAction.equals("BROWSING")) {
-                browseMenu(console, in, out);
+
+            switch (nextAction) {
+                case "Invalid input.":
+                    continue;
+                case "REGEX CREATION":
+                    createMenu(console, in, out);
+                    break;
+                case "BROWSING":
+                    browseMenu(console, in, out);
+                    break;
+                case "GOODBYE":
+                    return;
             }
         }
     }

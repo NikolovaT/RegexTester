@@ -17,34 +17,28 @@ public class ClientHandler implements Runnable {
     public void run() {
         System.out.println("New client connected.");
 
-        try (Scanner in = new Scanner(clientSocket.getInputStream());
-             PrintStream out = new PrintStream(clientSocket.getOutputStream())) {
+        try (Scanner in = new Scanner(clientSocket.getInputStream()); PrintStream out = new PrintStream(clientSocket.getOutputStream())) {
 
             userMenu(in, out);
 
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (clientSocket != null) {
-                try {
-                    clientSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 
     protected static void userMenu(Scanner in, PrintStream out) throws IOException {
-        out.println("Do you want to create new regex or browse the existing ones: [create/browse]");
-        String nextAction = in.nextLine();
+        while (true) {
 
-        if (nextAction.equalsIgnoreCase("create")) {
-            createMenu(in, out);
-        } else if (nextAction.equalsIgnoreCase("browse")) {
-            browseMenu(in, out);
+            out.println("Do you want to create new regex or browse the existing ones: [create/browse/exit]");
+            String nextAction = in.nextLine();
+
+            if (nextAction.equalsIgnoreCase("create")) createMenu(in, out);
+            else if (nextAction.equalsIgnoreCase("browse")) browseMenu(in, out);
+            else if (nextAction.equalsIgnoreCase("exit")) out.println("GOODBYE");
+            else out.println("Invalid input.");
+
+
         }
-
     }
 
     protected static void createMenu(Scanner in, PrintStream out) throws IOException {
@@ -71,9 +65,7 @@ public class ClientHandler implements Runnable {
             return (List<Regex>) in.readObject();
         } catch (IOException e) {
             if (e instanceof InvalidClassException) {
-                throw new RuntimeException("One or more of the User subclasses has likely changed." +
-                        " Serializable versions are not supported." +
-                        " Recreate the users file.", e);
+                throw new RuntimeException("One or more of the User subclasses has likely changed." + " Serializable versions are not supported." + " Recreate the users file.", e);
             }
 
             e.printStackTrace();
@@ -93,7 +85,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    protected static void addRegexToFile(Pattern pattern, String description) throws IOException {
+    protected static void addRegexToFile(Pattern pattern, String description) {
         Regex regex = new Regex(pattern, description);
         synchronized (lock) {
             List<Regex> regexes = loadRegex();

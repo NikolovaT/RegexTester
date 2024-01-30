@@ -1,7 +1,9 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class ClientHandler implements Runnable {
@@ -49,7 +51,40 @@ public class ClientHandler implements Runnable {
         out.println("Enter regex description: ");
         String description = in.nextLine();
 
-        addRegexToFile(pattern, description);
+        Regex regex = new Regex(pattern, description);
+        //TODO: add testing
+        out.println("How many test to run: ");
+        int numTest = Integer.parseInt(in.nextLine());
+        String[] strings = new String[numTest];
+
+        out.println("Enter the tests.");
+
+        // Get test
+        for (int i=0; i<numTest; i++){
+            strings[i] = in.nextLine();
+        }
+
+        List<Boolean> results = RegexTester.test(regex, strings);
+
+        // Send test
+        for (int i=0; i<numTest; i++){
+            if(results.get(i))
+                out.println("Test No." + (i+1) + ": matches");
+            else
+                out.println("Test No." + (i+1) + ": no match");
+        }
+
+        out.println("Do you want to save your regex [y/n]");
+
+        String nextAction = in.nextLine();
+
+        if (nextAction.equalsIgnoreCase("y")){
+            addRegexToFile(regex);
+            out.println("Regex saved successfully");
+        }
+        else
+            out.println("The regex is not saved");
+
     }
 
     protected static void browseMenu(Scanner in, PrintStream out) {
@@ -85,8 +120,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    protected static void addRegexToFile(Pattern pattern, String description) {
-        Regex regex = new Regex(pattern, description);
+    protected static void addRegexToFile(Regex regex) {
         synchronized (lock) {
             List<Regex> regexes = loadRegex();
             if (regexes != null) {
@@ -95,4 +129,5 @@ public class ClientHandler implements Runnable {
             saveRegex(regexes);
         }
     }
+
 }

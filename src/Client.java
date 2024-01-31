@@ -95,8 +95,18 @@ public class Client {
 
     protected static void browseMenu(Scanner console, Scanner in, PrintStream out) {
         System.out.println(in.nextLine());
+        out.println(console.nextLine());
 
-        //TODO:
+        while (in.hasNextLine()){
+            String line = in.nextLine();
+            if (line.equalsIgnoreCase("End of results"))
+                break;
+            System.out.println(line);
+        }
+
+        System.out.println("End of result");
+
+        //TODO: order results by rank
 
     }
 

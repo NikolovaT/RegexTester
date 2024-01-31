@@ -91,7 +91,17 @@ public class ClientHandler implements Runnable {
         out.println("BROWSING");
         out.println("Enter keyword: ");
         String keyword = in.nextLine();
-        //TODO: finish menu
+
+        List<Regex> regexes = loadRegex();
+
+        for (Regex regex : regexes){
+            if (regex.getDescription().contains(keyword)){
+                out.println(regex);
+            }
+        }
+
+        out.println("End of results");
+        //TODO: finish menu (order)
     }
 
     @SuppressWarnings("unchecked")

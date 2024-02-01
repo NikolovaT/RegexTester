@@ -2,12 +2,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
 public class Client {
     public static void main(String[] args) {
         Socket server = null;
-        Scanner console = null;
+        Scanner console;
         Scanner in = null;
         PrintStream out = null;
 
@@ -69,23 +68,7 @@ public class Client {
         System.out.println(in.nextLine());
         out.println(console.nextLine());
 
-        // Number of Test
-        System.out.println(in.nextLine());
-        int numTest = Integer.parseInt(console.nextLine());
-        out.println(numTest);
-
-        System.out.println(in.nextLine());
-
-        // Enter test
-        for (int i=0; i<numTest; i++){
-            System.out.print("Test No." + (i+1) + ": ");
-            out.println(console.nextLine());
-        }
-
-        // Get results
-        for (int i=0; i<numTest; i++){
-            System.out.println(in.nextLine());
-        }
+        regexTest(console, in, out);
 
         // Ask to save or not regex
         System.out.println(in.nextLine());
@@ -108,6 +91,27 @@ public class Client {
 
         //TODO: order results by rank
 
+    }
+
+    protected static void regexTest(Scanner console, Scanner in, PrintStream out){
+        // Number of Test
+        System.out.println(in.nextLine());
+        int numTest = Integer.parseInt(console.nextLine());
+        out.println(numTest);
+
+        if(numTest > 0)
+            System.out.println(in.nextLine());
+
+        // Enter test
+        for (int i=0; i<numTest; i++){
+            System.out.print("Test No." + (i+1) + ": ");
+            out.println(console.nextLine());
+        }
+
+        // Get results
+        for (int i=0; i<numTest; i++){
+            System.out.println(in.nextLine());
+        }
     }
 
 }

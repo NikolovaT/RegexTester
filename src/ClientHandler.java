@@ -1,13 +1,11 @@
 import java.io.*;
 import java.net.Socket;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class ClientHandler implements Runnable {
-    Socket clientSocket = null;
+    Socket clientSocket;
     static final Object lock = new Object();
 
     public ClientHandler(Socket client) {
@@ -20,9 +18,7 @@ public class ClientHandler implements Runnable {
         System.out.println("New client connected.");
 
         try (Scanner in = new Scanner(clientSocket.getInputStream()); PrintStream out = new PrintStream(clientSocket.getOutputStream())) {
-
             userMenu(in, out);
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -34,16 +30,18 @@ public class ClientHandler implements Runnable {
             out.println("Do you want to create new regex or browse the existing ones: [create/browse/exit]");
             String nextAction = in.nextLine();
 
-            if (nextAction.equalsIgnoreCase("create")) createMenu(in, out);
-            else if (nextAction.equalsIgnoreCase("browse")) browseMenu(in, out);
-            else if (nextAction.equalsIgnoreCase("exit")) out.println("GOODBYE");
-            else out.println("Invalid input.");
-
-
+            if (nextAction.equalsIgnoreCase("create"))
+                createMenu(in, out);
+            else if (nextAction.equalsIgnoreCase("browse"))
+                browseMenu(in, out);
+            else if (nextAction.equalsIgnoreCase("exit"))
+                out.println("GOODBYE");
+            else
+                out.println("Invalid input.");
         }
     }
 
-    protected static void createMenu(Scanner in, PrintStream out) throws IOException {
+    protected static void createMenu(Scanner in, PrintStream out) {
         out.println("REGEX CREATION");
         out.println("Enter regex pattern: ");
         Pattern pattern = Pattern.compile(in.nextLine());
@@ -52,39 +50,17 @@ public class ClientHandler implements Runnable {
         String description = in.nextLine();
 
         Regex regex = new Regex(pattern, description);
-        //TODO: add testing
-        out.println("How many test to run: ");
-        int numTest = Integer.parseInt(in.nextLine());
-        String[] strings = new String[numTest];
 
-        out.println("Enter the tests.");
-
-        // Get test
-        for (int i=0; i<numTest; i++){
-            strings[i] = in.nextLine();
-        }
-
-        List<Boolean> results = RegexTester.test(regex, strings);
-
-        // Send test
-        for (int i=0; i<numTest; i++){
-            if(results.get(i))
-                out.println("Test No." + (i+1) + ": matches");
-            else
-                out.println("Test No." + (i+1) + ": no match");
-        }
+        regexTest(in, out, regex);
 
         out.println("Do you want to save your regex [y/n]");
 
         String nextAction = in.nextLine();
 
-        if (nextAction.equalsIgnoreCase("y")){
+        if (nextAction.equalsIgnoreCase("y")) {
             addRegexToFile(regex);
             out.println("Regex saved successfully");
-        }
-        else
-            out.println("The regex is not saved");
-
+        } else out.println("The regex is not saved");
     }
 
     protected static void browseMenu(Scanner in, PrintStream out) {
@@ -140,4 +116,25 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    protected static void regexTest(Scanner in, PrintStream out, Regex regex) {
+        out.println("How many test to run: ");
+        int numTest = Integer.parseInt(in.nextLine());
+        String[] strings = new String[numTest];
+
+        if (strings.length > 0)
+            out.println("Enter the tests.");
+
+        // Get test
+        for (int i = 0; i < numTest; i++) {
+            strings[i] = in.nextLine();
+        }
+
+        List<Boolean> results = RegexTester.test(regex, strings);
+
+        // Send test
+        for (int i = 0; i < numTest; i++) {
+            if (results.get(i)) out.println("Test No." + (i + 1) + ": matches");
+            else out.println("Test No." + (i + 1) + ": no match");
+        }
+    }
 }

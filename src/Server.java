@@ -18,8 +18,6 @@ public class Server {
         try {
             server = new ServerSocket(8080);
             System.out.println("Server is up.");
-            List<Regex> regs = ClientHandler.loadRegex();
-            System.out.println(regs);
 
             while (true) {
                 Socket client = server.accept();
